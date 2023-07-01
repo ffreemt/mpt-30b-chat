@@ -18,7 +18,7 @@ if os.environ.get("MOSAICML_API_KEY") is None:
 # """
 
 def predict(x, y, timeout):
-    logger.debug(f"{x=}, {y=}, {timeout=}"
+    logger.debug(f"{x=}, {y=}, {timeout=}")
 
 
 def download_mpt_quant(destination_folder: str, repo_id: str, model_filename: str):
