@@ -2,8 +2,10 @@
 # pylint: disable=invalid-name, missing-function-docstring, missing-class-docstring, redefined-outer-name, broad-except
 import os
 import time
+from dataclasses import asdict, dataclass
 
 import gradio as gr
+from ctransformers import AutoConfig, AutoModelForCausalLM
 
 # from mcli import predict
 from huggingface_hub import hf_hub_download
@@ -17,6 +19,7 @@ if os.environ.get("MOSAICML_API_KEY") is None:
     raise ValueError("git environment variable must be set")
 # """
 
+
 def predict(x, y, timeout):
     logger.debug(f"{x=}, {y=}, {timeout=}")
 
@@ -28,6 +31,47 @@ def download_mpt_quant(destination_folder: str, repo_id: str, model_filename: st
         filename=model_filename,
         local_dir=local_path,
         local_dir_use_symlinks=True,
+    )
+
+
+@dataclass
+class GenerationConfig:
+    temperature: float
+    top_k: int
+    top_p: float
+    repetition_penalty: float
+    max_new_tokens: int
+    seed: int
+    reset: bool
+    stream: bool
+    threads: int
+    stop: list[str]
+
+
+def format_prompt(system_prompt: str, user_prompt: str):
+    """format prompt based on: https://huggingface.co/spaces/mosaicml/mpt-30b-chat/blob/main/app.py"""
+
+    system_prompt = f"<|im_start|>system\n{system_prompt}<|im_end|>\n"
+    user_prompt = f"<|im_start|>user\n{user_prompt}<|im_end|>\n"
+    assistant_prompt = f"<|im_start|>assistant\n"
+
+    return f"{system_prompt}{user_prompt}{assistant_prompt}"
+
+
+def generate(
+    llm: AutoModelForCausalLM,
+    generation_config: GenerationConfig,
+    system_prompt: str,
+    user_prompt: str,
+):
+    """run model inference, will return a Generator if streaming is true"""
+
+    return llm(
+        format_prompt(
+            system_prompt,
+            user_prompt,
+        ),
+        **asdict(generation_config),
     )
 
 
@@ -120,7 +164,21 @@ def call_inf_server(prompt):
         # remove spl tokens from prompt
         spl_tokens = ["<|im_start|>", "<|im_end|>"]
         clean_prompt = prompt.replace(spl_tokens[0], "").replace(spl_tokens[1], "")
-        return response[len(clean_prompt) :]  # remove the prompt
+
+        # return response[len(clean_prompt) :]  # remove the prompt
+        try:
+            user_prompt = prompt
+            generator = generate(llm, generation_config, system_prompt, user_prompt.strip())
+            print(assistant_prefix, end=" ", flush=True)
+            for word in generator:
+                print(word, end="", flush=True)
+            print("")
+            response = word
+        except Exception as exc:
+            logger.error(exc)
+            response = f"{exc=}"
+        return response
+
     except Exception as e:
         # assume it is our error
         # just wait and try one more time
@@ -142,9 +200,35 @@ _ = """full url: https://huggingface.co/TheBloke/mpt-30B-chat-GGML/blob/main/mpt
 repo_id = "TheBloke/mpt-30B-chat-GGML"
 model_filename = "mpt-30b-chat.ggmlv0.q4_1.bin"
 destination_folder = "models"
-download_mpt_quant(destination_folder, repo_id, model_filename)
+
+# download_mpt_quant(destination_folder, repo_id, model_filename)
 
 logger.info("done dl")
+
+config = AutoConfig.from_pretrained("mosaicml/mpt-30b-chat", context_length=8192)
+llm = AutoModelForCausalLM.from_pretrained(
+    os.path.abspath("models/mpt-30b-chat.ggmlv0.q4_1.bin"),
+    model_type="mpt",
+    config=config,
+)
+
+system_prompt = "A conversation between a user and an LLM-based AI assistant named Local Assistant. Local Assistant gives helpful and honest answers."
+
+generation_config = GenerationConfig(
+    temperature=0.2,
+    top_k=0,
+    top_p=0.9,
+    repetition_penalty=1.0,
+    max_new_tokens=512,  # adjust as needed
+    seed=42,
+    reset=False,  # reset history (cache)
+    stream=True,  # streaming per word/token
+    threads=int(os.cpu_count() / 2),  # adjust for your CPU
+    stop=["<|im_end|>", "|<"],
+)
+
+user_prefix = "[user]: "
+assistant_prefix = "[assistant]:"
 
 with gr.Blocks(
     theme=gr.themes.Soft(),
