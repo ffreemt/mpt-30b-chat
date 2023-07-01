@@ -17,8 +17,8 @@ if os.environ.get("MOSAICML_API_KEY") is None:
     raise ValueError("git environment variable must be set")
 # """
 
-def predict(x, y, z):
-    ...
+def predict(x, y, timeout):
+    logger.debug(f"{x=}, {y=}, {timeout=}"
 
 
 def download_mpt_quant(destination_folder: str, repo_id: str, model_filename: str):
