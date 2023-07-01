@@ -1,6 +1,6 @@
 ---
-title: Mpt 30b Chat
-emoji: 🦀
+title: mpt 30b chat
+emoji: 🔥
 colorFrom: purple
 colorTo: red
 sdk: gradio
