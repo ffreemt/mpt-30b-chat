@@ -298,7 +298,7 @@ with gr.Blocks(
             elem_classes=["disclaimer"],
         )
 
-    # _ = """
+    _ = """
     submit_event = msg.submit(
         fn=conversation.user_turn,
         inputs=[msg, chatbot],
