@@ -201,7 +201,7 @@ repo_id = "TheBloke/mpt-30B-chat-GGML"
 model_filename = "mpt-30b-chat.ggmlv0.q4_1.bin"
 destination_folder = "models"
 
-# download_mpt_quant(destination_folder, repo_id, model_filename)
+download_mpt_quant(destination_folder, repo_id, model_filename)
 
 logger.info("done dl")
 
