@@ -20,8 +20,22 @@ if os.environ.get("MOSAICML_API_KEY") is None:
 # """
 
 
-def predict(x, y, timeout):
-    logger.debug(f"{x=}, {y=}, {timeout=}")
+def predict0(prompt, bot, timeout):
+    logger.debug(f"{prompt=}, {bot=}, {timeout=}")
+    try:
+        user_prompt = prompt
+        generator = generate(llm, generation_config, system_prompt, user_prompt.strip())
+        print(assistant_prefix, end=" ", flush=True)
+        for word in generator:
+            print(word, end="", flush=True)
+        print("")
+        response = word
+    except Exception as exc:
+        logger.error(exc)
+        response = f"{exc=}"
+    bot = {"inputs": [response]}
+
+    return prompt, bot
 
 
 def download_mpt_quant(destination_folder: str, repo_id: str, model_filename: str):
@@ -284,6 +298,7 @@ with gr.Blocks(
             elem_classes=["disclaimer"],
         )
 
+    # _ = """
     submit_event = msg.submit(
         fn=conversation.user_turn,
         inputs=[msg, chatbot],
@@ -301,11 +316,13 @@ with gr.Blocks(
         outputs=[msg, chatbot],
         queue=False,
     ).then(
-        fn=conversation.bot_turn,
+        # fn=conversation.bot_turn,
         inputs=[system, chatbot],
         outputs=[msg, chatbot],
         queue=True,
     )
+    # """
+
     stop.click(
         fn=None,
         inputs=None,
