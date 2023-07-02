@@ -263,7 +263,7 @@ with gr.Blocks(
 
             This demo is of [TheBloke/mpt-30B-chat-GGML](TheBloke/mpt-30B-chat-GGML.)
 
-            It takes about 20 seconds to get a response.
+            It takes about >40 seconds to get a response.
             """,
             elem_classes="intro"
         )
@@ -294,7 +294,8 @@ with gr.Blocks(
                     with gr.Row():
                         change = gr.Button("Change System Prompt")
                         reset = gr.Button("Reset System Prompt")
-    with gr.Row():
+    # with gr.Row():
+    with gr.Accordion("Disclaimer", open=False):
         gr.Markdown(
             "Disclaimer: MPT-30B can produce factually incorrect output, and should not be relied on to produce "
             "factually accurate information. MPT-30B was trained on various public datasets; while great efforts "
@@ -365,6 +366,8 @@ with gr.Blocks(
         inputs=[msg, chatbot],
         outputs=[msg, chatbot],
         queue=True,
+        show_progress="full",
+        api_name="predict"
     )
     submit.click(
         # fn=conversation.user_turn,
@@ -372,6 +375,7 @@ with gr.Blocks(
         inputs=[msg, chatbot],
         outputs=[msg, chatbot],
         queue=True,
+        show_progress="full",
     )
 
 demo.queue(max_size=36, concurrency_count=14).launch(debug=True)
