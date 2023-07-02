@@ -35,6 +35,7 @@ def predict0(prompt, bot):
             print(word, end="", flush=True)
             response += word
             ns.response = response
+            buff.update(value=response)
         print("")
         logger.debug(f"{response=}")
     except Exception as exc:
@@ -439,6 +440,7 @@ with gr.Blocks(
     )
 
     # update buff Textbox, every: units in seconds)
+    # https://huggingface.co/spaces/julien-c/nvidia-smi/discussions
     # does not work
     # AttributeError: 'Blocks' object has no attribute 'run_forever'
     # block.run_forever(lambda: ns.response, None, [buff], every=1)
