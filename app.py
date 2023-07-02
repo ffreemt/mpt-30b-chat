@@ -30,10 +30,12 @@ def predict0(prompt, bot):
             print(word, end="", flush=True)
         print("")
         response = word
+        logger.debug(f"{response=}")
     except Exception as exc:
         logger.error(exc)
         response = f"{exc=}"
-    bot = {"inputs": [response]}
+    # bot = {"inputs": [response]}
+    bot = [(prompt, response)]
 
     return prompt, bot
 
@@ -244,19 +246,26 @@ generation_config = GenerationConfig(
 user_prefix = "[user]: "
 assistant_prefix = "[assistant]: "
 
+css = """
+    .disclaimer {font-variant-caps: all-small-caps; font-size: xx-small;}
+    .intro {font-size: x-small;}
+"""
+
 with gr.Blocks(
     theme=gr.themes.Soft(),
-    css=".disclaimer {font-variant-caps: all-small-caps; font-size: small;}",
+    css=css,
 ) as demo:
-    gr.Markdown(
-        """<h1><center>MosaicML MPT-30B-Chat</center></h1>
+    with gr.Accordion("🎈 Info", open=False):
+        gr.Markdown(
+            """<h4><center>mosaicml mpt-30b-chat</center></h4>
 
-        This demo is of [MPT-30B-Chat](https://huggingface.co/mosaicml/mpt-30b-ch a t). It is based on [MPT-30B](https://huggingface.co/mosaicml/mpt-30b) fine-tuned on approximately 300,000 turns of high-quality conversations, and is powered by [MosaicML Inference](https://www.mosaicml.com/inference).
+            This demo is of [MPT-30B-Chat](https://huggingface.co/mosaicml/mpt-30b-ch a t). It is based on [MPT-30B](https://huggingface.co/mosaicml/mpt-30b) fine-tuned on approximately 300,000 turns of high-quality conversations, and is powered by [MosaicML Inference](https://www.mosaicml.com/inference).
 
-        If you're interested in [training](https://www.mosaicml.com/training) and [deploying](https://www.mosaicml.com/inference) your own MPT or LLMs, [sign up](https://forms.mosaicml.com/demo?utm_source=huggingface&utm_medium=referral&utm_campaign=mpt-30b) for MosaicML platform.
+            If you're interested in [training](https://www.mosaicml.com/training) and [deploying](https://www.mosaicml.com/inference) your own MPT or LLMs, [sign up](https://forms.mosaicml.com/demo?utm_source=huggingface&utm_medium=referral&utm_campaign=mpt-30b) for MosaicML platform.
 
-"""
-    )
+            """,
+            elem_classes="intro"
+        )
     conversation = Chat()
     chatbot = gr.Chatbot().style(height=200)  # 500
     with gr.Row():
@@ -354,7 +363,7 @@ with gr.Blocks(
         fn=predict0,
         inputs=[msg, chatbot],
         outputs=[msg, chatbot],
-        queue=False,
+        queue=True,
     )
 
 demo.queue(max_size=36, concurrency_count=14).launch(debug=True)
