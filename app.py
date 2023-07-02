@@ -31,6 +31,7 @@ def predict0(prompt, bot):
         for word in generator:
             print(word, end="", flush=True)
             response += word
+            buff.value = response
         print("")
         logger.debug(f"{response=}")
     except Exception as exc:
@@ -269,7 +270,7 @@ with gr.Blocks(
 ) as block:
     with gr.Accordion("🎈 Info", open=False):
         gr.HTML(
-        """<center><a href="https://huggingface.co/spaces/mikeee/mpt-30b-chat?duplicate=true"><img src="https://bit.ly/3gLdBN6" alt="Duplicate"></a> and spin a CPU UPGRADE to avoid the queue</center>"""
+            """<center><a href="https://huggingface.co/spaces/mikeee/mpt-30b-chat?duplicate=true"><img src="https://bit.ly/3gLdBN6" alt="Duplicate"></a> and spin a CPU UPGRADE to avoid the queue</center>"""
         )
         gr.Markdown(
             """<h4><center>mpt-30b-ggml-chat</center></h4>
@@ -282,6 +283,7 @@ with gr.Blocks(
         )
     conversation = Chat()
     chatbot = gr.Chatbot().style(height=700)  # 500
+    buff = gr.Textbox()
     with gr.Row():
         with gr.Column():
             msg = gr.Textbox(
