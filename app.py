@@ -30,8 +30,8 @@ def predict0(prompt, bot):
         response = ""
         for word in generator:
             print(word, end="", flush=True)
+            response += word
         print("")
-        response += word
         logger.debug(f"{response=}")
     except Exception as exc:
         logger.error(exc)
