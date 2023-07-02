@@ -219,6 +219,12 @@ logger.info("start dl")
 _ = """full url: https://huggingface.co/TheBloke/mpt-30B-chat-GGML/blob/main/mpt-30b-chat.ggmlv0.q4_1.bin"""
 
 repo_id = "TheBloke/mpt-30B-chat-GGML"
+
+# https://huggingface.co/TheBloke/mpt-30B-chat-GGML
+_ = """
+mpt-30b-chat.ggmlv0.q4_0.bin 	q4_0 	4 	16.85 GB 	19.35 GB 	4-bit.
+mpt-30b-chat.ggmlv0.q4_1.bin 	q4_1 	4 	18.73 GB 	21.23 GB 	4-bit. Higher accuracy than q4_0 but not as high as q5_0. However has quicker inference than q5 models.
+"""
 model_filename = "mpt-30b-chat.ggmlv0.q4_1.bin"
 destination_folder = "models"
 
@@ -431,8 +437,8 @@ with gr.Blocks(
         show_progress="full",
     )
 
-    # update buff Textbox
-    block.load(lambda: ns.response, [], [buff])
+    # update buff Textbox, every: units in seconds)
+    block.run_forever(lambda: ns.response, None, [buff], every=1)
 
 # concurrency_count=5, max_size=20
 # max_size=36, concurrency_count=14
