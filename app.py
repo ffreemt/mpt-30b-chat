@@ -3,6 +3,7 @@
 import os
 import time
 from dataclasses import asdict, dataclass
+from types import SimpleNamespace
 
 import gradio as gr
 from ctransformers import AutoConfig, AutoModelForCausalLM
@@ -18,6 +19,7 @@ if URL is None:
 if MOSAICML_API_KEY is None:
     raise ValueError("git environment variable must be set")
 
+ns = SimpleNamespace(response="")
 
 def predict0(prompt, bot):
     # logger.debug(f"{prompt=}, {bot=}, {timeout=}")
@@ -31,7 +33,7 @@ def predict0(prompt, bot):
         for word in generator:
             print(word, end="", flush=True)
             response += word
-            buff.value = response
+            ns.response = response
         print("")
         logger.debug(f"{response=}")
     except Exception as exc:
@@ -283,7 +285,7 @@ with gr.Blocks(
         )
     conversation = Chat()
     chatbot = gr.Chatbot().style(height=700)  # 500
-    buff = gr.Textbox()
+    buff = gr.Textbox(show_label=False)
     with gr.Row():
         with gr.Column():
             msg = gr.Textbox(
@@ -428,6 +430,9 @@ with gr.Blocks(
         queue=True,
         show_progress="full",
     )
+
+    # update buff Textbox
+    block.load(lambda: ns.response, [], [buff])
 
 # concurrency_count=5, max_size=20
 # max_size=36, concurrency_count=14
