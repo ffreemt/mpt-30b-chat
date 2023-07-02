@@ -259,7 +259,7 @@ css = """
         border: none !important;
     }
     .disclaimer {font-variant-caps: all-small-caps; font-size: xx-small;}
-    .intro {font-size: x-small;}
+    .xsmall {font-size: x-small;}
 """
 
 with gr.Blocks(
@@ -274,11 +274,11 @@ with gr.Blocks(
         gr.Markdown(
             """<h4><center>mpt-30b-ggml-chat</center></h4>
 
-            This demo is of [TheBloke/mpt-30B-chat-GGML](TheBloke/mpt-30B-chat-GGML.)
+            This demo is of [TheBloke/mpt-30B-chat-GGML](https://huggingface.co/TheBloke/mpt-30B-chat-GGML).
 
-            It takes about >40 seconds to get a response. Restarting the space takes about 5 minutes if the space is asleep due to inactivity.
+            It takes about >40 seconds to get a response. Restarting the space takes about 5 minutes if the space is asleep due to inactivity. If the space crashes for some reason, it will also take about 5 minutes to restart. You need to refresh the browser to reload the new space.
             """,
-            elem_classes="intro"
+            elem_classes="xsmall"
         )
     conversation = Chat()
     chatbot = gr.Chatbot().style(height=700)  # 500
@@ -291,7 +291,7 @@ with gr.Blocks(
             ).style(container=False)
         with gr.Column():
             with gr.Row():
-                submit = gr.Button("Submit")
+                submit = gr.Button("Submit", elem_classes="xsmall")
                 stop = gr.Button("Stop", visible=False)
                 clear = gr.Button("Clear", visible=False)
     with gr.Row(visible=False):
