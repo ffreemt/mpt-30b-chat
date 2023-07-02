@@ -31,6 +31,7 @@ def predict0(prompt, bot):
         print(assistant_prefix, end=" ", flush=True)
 
         response = ""
+        buff.update(value="diggin...")
         for word in generator:
             print(word, end="", flush=True)
             response += word
@@ -46,6 +47,30 @@ def predict0(prompt, bot):
 
     return prompt, bot
 
+def predict_api(prompt):
+    logger.debug(f"{prompt=}")
+    ns.response = ""
+    try:
+        user_prompt = prompt
+        generator = generate(llm, generation_config, system_prompt, user_prompt.strip())
+        print(assistant_prefix, end=" ", flush=True)
+
+        response = ""
+        buff.update(value="diggin...")
+        for word in generator:
+            print(word, end="", flush=True)
+            response += word
+            ns.response = response
+            buff.update(value=response)
+        print("")
+        logger.debug(f"{response=}")
+    except Exception as exc:
+        logger.error(exc)
+        response = f"{exc=}"
+    # bot = {"inputs": [response]}
+    # bot = [(prompt, response)]
+
+    return response
 
 def download_mpt_quant(destination_folder: str, repo_id: str, model_filename: str):
     local_path = os.path.abspath(destination_folder)
@@ -444,6 +469,18 @@ with gr.Blocks(
     # does not work
     # AttributeError: 'Blocks' object has no attribute 'run_forever'
     # block.run_forever(lambda: ns.response, None, [buff], every=1)
+
+    with gr.Accordion("For Chat/Translation API", open=False, visible=False):
+        input_text = gr.Text()
+        api_btn = gr.Button("Go", variant="primary")
+        out_text = gr.Text()
+    api_btn.click(
+        predict_api,
+        input_text,
+        out_text,
+        # show_progress="full",
+        api_name="api",
+    )
 
 # concurrency_count=5, max_size=20
 # max_size=36, concurrency_count=14
