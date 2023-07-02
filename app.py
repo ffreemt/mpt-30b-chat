@@ -261,10 +261,9 @@ with gr.Blocks(
         gr.Markdown(
             """<h4><center>mosaicml mpt-30b-chat</center></h4>
 
-            This demo is of [MPT-30B-Chat](https://huggingface.co/mosaicml/mpt-30b-ch a t). It is based on [MPT-30B](https://huggingface.co/mosaicml/mpt-30b) fine-tuned on approximately 300,000 turns of high-quality conversations, and is powered by [MosaicML Inference](https://www.mosaicml.com/inference).
+            This demo is of [TheBloke/mpt-30B-chat-GGML](TheBloke/mpt-30B-chat-GGML.)
 
-            If you're interested in [training](https://www.mosaicml.com/training) and [deploying](https://www.mosaicml.com/inference) your own MPT or LLMs, [sign up](https://forms.mosaicml.com/demo?utm_source=huggingface&utm_medium=referral&utm_campaign=mpt-30b) for MosaicML platform.
-
+            It takes about 20 seconds to get a response.
             """,
             elem_classes="intro"
         )
@@ -280,9 +279,9 @@ with gr.Blocks(
         with gr.Column():
             with gr.Row():
                 submit = gr.Button("Submit")
-                stop = gr.Button("Stop")
-                clear = gr.Button("Clear")
-    with gr.Row():
+                stop = gr.Button("Stop", visible=False)
+                clear = gr.Button("Clear", visible=False)
+    with gr.Row(visible=False):
         with gr.Accordion("Advanced Options:", open=False):
             with gr.Row():
                 with gr.Column(scale=2):
@@ -303,7 +302,7 @@ with gr.Blocks(
             "biased, or otherwise offensive outputs.",
             elem_classes=["disclaimer"],
         )
-    with gr.Row():
+    with gr.Row(visible=False):
         gr.Markdown(
             "[Privacy policy](https://gist.github.com/samhavens/c29c68cdcd420a9aa0202d0839876dac)",
             elem_classes=["disclaimer"],
@@ -361,6 +360,13 @@ with gr.Blocks(
     # """
 
     msg.submit(
+        # fn=conversation.user_turn,
+        fn=predict0,
+        inputs=[msg, chatbot],
+        outputs=[msg, chatbot],
+        queue=True,
+    )
+    submit.click(
         # fn=conversation.user_turn,
         fn=predict0,
         inputs=[msg, chatbot],
