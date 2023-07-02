@@ -20,7 +20,8 @@ if MOSAICML_API_KEY is None:
 
 
 def predict0(prompt, bot):
-    logger.debug(f"{prompt=}, {bot=}, {timeout=}")
+    # logger.debug(f"{prompt=}, {bot=}, {timeout=}")
+    logger.debug(f"{prompt=}, {bot=}")
     try:
         user_prompt = prompt
         generator = generate(llm, generation_config, system_prompt, user_prompt.strip())
