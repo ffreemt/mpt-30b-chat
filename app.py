@@ -71,7 +71,7 @@ def format_prompt(system_prompt: str, user_prompt: str):
 
     system_prompt = f"<|im_start|>system\n{system_prompt}<|im_end|>\n"
     user_prompt = f"<|im_start|>user\n{user_prompt}<|im_end|>\n"
-    assistant_prompt = f"<|im_start|>assistant\n"
+    assistant_prompt = "<|im_start|>assistant\n"
 
     return f"{system_prompt}{user_prompt}{assistant_prompt}"
 
@@ -248,32 +248,42 @@ generation_config = GenerationConfig(
 user_prefix = "[user]: "
 assistant_prefix = "[assistant]: "
 
+
 css = """
+    .importantButton {
+        background: linear-gradient(45deg, #7e0570,#5d1c99, #6e00ff) !important;
+        border: none !important;
+    }
+    .importantButton:hover {
+        background: linear-gradient(45deg, #ff00e0,#8500ff, #6e00ff) !important;
+        border: none !important;
+    }
     .disclaimer {font-variant-caps: all-small-caps; font-size: xx-small;}
     .intro {font-size: x-small;}
 """
 
 with gr.Blocks(
-    theme=gr.themes.Soft(),
+    title="mpt-30b-ggml-chat",
+    theme=gr.themes.Soft(text_size="sm"),
     css=css,
-) as demo:
+) as block:
     with gr.Accordion("🎈 Info", open=False):
         gr.Markdown(
-            """<h4><center>mosaicml mpt-30b-chat</center></h4>
+            """<h4><center>mpt-30b-ggml-chat</center></h4>
 
             This demo is of [TheBloke/mpt-30B-chat-GGML](TheBloke/mpt-30B-chat-GGML.)
 
-            It takes about >40 seconds to get a response.
+            It takes about >40 seconds to get a response. Restarting the space takes about 5 minutes if the space is asleep due to inactivity.
             """,
             elem_classes="intro"
         )
     conversation = Chat()
-    chatbot = gr.Chatbot().style(height=500)  # 500
+    chatbot = gr.Chatbot().style(height=700)  # 500
     with gr.Row():
         with gr.Column():
             msg = gr.Textbox(
                 label="Chat Message Box",
-                placeholder="Chat Message Box",
+                placeholder="Ask me anything (press Enter or click Submit to send)",
                 show_label=False,
             ).style(container=False)
         with gr.Column():
@@ -294,6 +304,42 @@ with gr.Blocks(
                     with gr.Row():
                         change = gr.Button("Change System Prompt")
                         reset = gr.Button("Reset System Prompt")
+
+    with gr.Accordion("Example inputs", open=True):
+        etext = """In America, where cars are an important part of the national psyche, a decade ago people had suddenly started to drive less, which had not happened since the oil shocks of the 1970s. """
+        examples = gr.Examples(
+            examples=[
+                ["Explain the plot of Cinderella in a sentence."],
+                [
+                    "How long does it take to become proficient in French, and what are the best methods for retaining information?"
+                ],
+                ["What are some common mistakes to avoid when writing code?"],
+                ["Build a prompt to generate a beautiful portrait of a horse"],
+                ["Suggest four metaphors to describe the benefits of AI"],
+                ["Write a pop song about leaving home for the sandy beaches."],
+                ["Write a summary demonstrating my ability to tame lions"],
+                ["鲁迅和周树人什么关系"],
+                ["从前有一头牛，这头牛后面有什么？"],
+                ["正无穷大加一大于正无穷大吗？"],
+                ["正无穷大加正无穷大大于正无穷大吗？"],
+                ["-2的平方根等于什么"],
+                ["树上有5只鸟，猎人开枪打死了一只。树上还有几只鸟？"],
+                ["树上有11只鸟，猎人开枪打死了一只。树上还有几只鸟？提示：需考虑鸟可能受惊吓飞走。"],
+                ["鲁迅和周树人什么关系 用英文回答"],
+                ["以红楼梦的行文风格写一张委婉的请假条。不少于320字。"],
+                [f"{etext} 翻成中文，列出3个版本"],
+                [f"{etext} \n 翻成中文，保留原意，但使用文学性的语言。不要写解释。列出3个版本"],
+                ["js 判断一个数是不是质数"],
+                ["js 实现python 的 range(10)"],
+                ["js 实现python 的 [*(range(10)]"],
+                ["假定 1 + 2 = 4, 试求 7 + 8"],
+                ["Erkläre die Handlung von Cinderella in einem Satz."],
+                ["Erkläre die Handlung von Cinderella in einem Satz. Auf Deutsch"],
+            ],
+            inputs=[msg],
+            examples_per_page=30,
+        )
+
     # with gr.Row():
     with gr.Accordion("Disclaimer", open=False):
         gr.Markdown(
@@ -378,4 +424,4 @@ with gr.Blocks(
         show_progress="full",
     )
 
-demo.queue(max_size=36, concurrency_count=14).launch(debug=True)
+block.queue(max_size=36, concurrency_count=14).launch(debug=True)
