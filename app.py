@@ -7,20 +7,19 @@ from dataclasses import asdict, dataclass
 import gradio as gr
 from ctransformers import AutoConfig, AutoModelForCausalLM
 
-# from mcli import predict
+from mcli import predict
 from huggingface_hub import hf_hub_download
 from loguru import logger
 
-URL = os.environ.get("URL")
-_ = """
+URL = os.getenv("URL", "")
+MOSAICML_API_KEY = os.getenv("MOSAICML_API_KEY", "")
 if URL is None:
     raise ValueError("URL environment variable must be set")
-if os.environ.get("MOSAICML_API_KEY") is None:
+if MOSAICML_API_KEY is None:
     raise ValueError("git environment variable must be set")
-# """
 
 
-def predict0(prompt, bot, timeout):
+def predict0(prompt, bot):
     logger.debug(f"{prompt=}, {bot=}, {timeout=}")
     try:
         user_prompt = prompt
@@ -242,11 +241,11 @@ generation_config = GenerationConfig(
 )
 
 user_prefix = "[user]: "
-assistant_prefix = "[assistant]:"
+assistant_prefix = "[assistant]: "
 
 with gr.Blocks(
     theme=gr.themes.Soft(),
-    css=".disclaimer {font-variant-caps: all-small-caps;}",
+    css=".disclaimer {font-variant-caps: all-small-caps; font-size: small;}",
 ) as demo:
     gr.Markdown(
         """<h1><center>MosaicML MPT-30B-Chat</center></h1>
@@ -258,7 +257,7 @@ with gr.Blocks(
 """
     )
     conversation = Chat()
-    chatbot = gr.Chatbot().style(height=500)
+    chatbot = gr.Chatbot().style(height=200)  # 500
     with gr.Row():
         with gr.Column():
             msg = gr.Textbox(
@@ -349,5 +348,12 @@ with gr.Blocks(
     )
     # """
 
+    msg.submit(
+        # fn=conversation.user_turn,
+        fn=predict0,
+        inputs=[msg, chatbot],
+        outputs=[msg, chatbot],
+        queue=False,
+    )
 
 demo.queue(max_size=36, concurrency_count=14).launch(debug=True)
