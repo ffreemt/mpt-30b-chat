@@ -268,6 +268,9 @@ with gr.Blocks(
     css=css,
 ) as block:
     with gr.Accordion("🎈 Info", open=False):
+        gr.HTML(
+        """<center><a href="https://huggingface.co/spaces/mikeee/mpt-30b-chat?duplicate=true"><img src="https://bit.ly/3gLdBN6" alt="Duplicate"></a> and spin a CPU UPGRADE to avoid the queue</center>"""
+        )
         gr.Markdown(
             """<h4><center>mpt-30b-ggml-chat</center></h4>
 
@@ -424,4 +427,6 @@ with gr.Blocks(
         show_progress="full",
     )
 
-block.queue(max_size=36, concurrency_count=14).launch(debug=True)
+# concurrency_count=5, max_size=20
+# max_size=36, concurrency_count=14
+block.queue(concurrency_count=5, max_size=20).launch(debug=True)
