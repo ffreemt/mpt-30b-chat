@@ -268,7 +268,7 @@ with gr.Blocks(
             elem_classes="intro"
         )
     conversation = Chat()
-    chatbot = gr.Chatbot().style(height=200)  # 500
+    chatbot = gr.Chatbot().style(height=500)  # 500
     with gr.Row():
         with gr.Column():
             msg = gr.Textbox(
