@@ -26,10 +26,12 @@ def predict0(prompt, bot):
         user_prompt = prompt
         generator = generate(llm, generation_config, system_prompt, user_prompt.strip())
         print(assistant_prefix, end=" ", flush=True)
+
+        response = ""
         for word in generator:
             print(word, end="", flush=True)
         print("")
-        response = word
+        response += word
         logger.debug(f"{response=}")
     except Exception as exc:
         logger.error(exc)
