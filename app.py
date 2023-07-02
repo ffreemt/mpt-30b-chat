@@ -24,6 +24,7 @@ ns = SimpleNamespace(response="")
 def predict0(prompt, bot):
     # logger.debug(f"{prompt=}, {bot=}, {timeout=}")
     logger.debug(f"{prompt=}, {bot=}")
+    ns.response = ""
     try:
         user_prompt = prompt
         generator = generate(llm, generation_config, system_prompt, user_prompt.strip())
@@ -438,7 +439,9 @@ with gr.Blocks(
     )
 
     # update buff Textbox, every: units in seconds)
-    block.run_forever(lambda: ns.response, None, [buff], every=1)
+    # does not work
+    # AttributeError: 'Blocks' object has no attribute 'run_forever'
+    # block.run_forever(lambda: ns.response, None, [buff], every=1)
 
 # concurrency_count=5, max_size=20
 # max_size=36, concurrency_count=14
