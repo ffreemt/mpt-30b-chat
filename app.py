@@ -25,6 +25,8 @@ ns = SimpleNamespace(response="")
 
 def predict0(prompt, bot):
     # logger.debug(f"{prompt=}, {bot=}, {timeout=}")
+    _ = ("", "")
+    bot.append(_)
     logger.debug(f"{prompt=}, {bot=}")
     ns.response = ""
     with about_time() as atime:
@@ -35,7 +37,10 @@ def predict0(prompt, bot):
 
             response = ""
             buff.update(value="diggin...")
-            bot[-1] = [(prompt, "diggin...")]
+            if bot:
+                bot[-1] = [(prompt, "diggin...")]
+            else:
+                bot = [(prompt, "diggin...")]
             for word in generator:
                 print(word, end="", flush=True)
                 response += word
@@ -53,7 +58,7 @@ def predict0(prompt, bot):
         f"(time elapsed: {atime.duration_human}, "
         f"{atime.duration/(len(prompt) + len(response))} s/char)"
     )
-    bot = [(prompt, f"{response} {_}")]
+    bot[-1] = [(prompt, f"{response} {_}")]
 
     return prompt, bot
 
