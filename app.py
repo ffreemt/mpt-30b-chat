@@ -25,8 +25,6 @@ ns = SimpleNamespace(response="")
 
 def predict0(prompt, bot):
     # logger.debug(f"{prompt=}, {bot=}, {timeout=}")
-    _ = ("", "")
-    bot.append(_)
     logger.debug(f"{prompt=}, {bot=}")
     ns.response = ""
     with about_time() as atime:
@@ -37,16 +35,12 @@ def predict0(prompt, bot):
 
             response = ""
             buff.update(value="diggin...")
-            if bot:
-                bot[-1] = [(prompt, "diggin...")]
-            else:
-                bot = [(prompt, "diggin...")]
+
             for word in generator:
                 print(word, end="", flush=True)
                 response += word
                 ns.response = response
                 buff.update(value=response)
-                bot[-1] = [(prompt, response)]
             print("")
             logger.debug(f"{response=}")
         except Exception as exc:
@@ -56,9 +50,9 @@ def predict0(prompt, bot):
     # bot = {"inputs": [response]}
     _ = (
         f"(time elapsed: {atime.duration_human}, "
-        f"{atime.duration/(len(prompt) + len(response))} s/char)"
+        f"{atime.duration/(len(prompt) + len(response)):.1f}s/char)"
     )
-    bot[-1] = [(prompt, f"{response} {_}")]
+    bot.append([prompt, f"{response} {_}"])
 
     return prompt, bot
 
@@ -354,7 +348,7 @@ with gr.Blocks(
             with gr.Row():
                 submit = gr.Button("Submit", elem_classes="xsmall")
                 stop = gr.Button("Stop", visible=False)
-                clear = gr.Button("Clear", visible=False)
+                clear = gr.Button("Clear", visible=True)
     with gr.Row(visible=False):
         with gr.Accordion("Advanced Options:", open=False):
             with gr.Row():
@@ -488,6 +482,7 @@ with gr.Blocks(
         queue=True,
         show_progress="full",
     )
+    clear.click(lambda: None, None, chatbot, queue=False)
 
     # update buff Textbox, every: units in seconds)
     # https://huggingface.co/spaces/julien-c/nvidia-smi/discussions
