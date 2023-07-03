@@ -1,10 +1,11 @@
-"""Refer to https://github.com/abacaj/mpt-30B-inference/blob/main/download_model.py."""
-# pylint: disable=invalid-name, missing-function-docstring, missing-class-docstring, redefined-outer-name, broad-except
+"""Refer to https://github.com/abacaj/mpt-30B-inference."""
+# pylint: disable=invalid-name, missing-function-docstring, missing-class-docstring, redefined-outer-name, broad-except, line-too-long
 import os
 import time
 from dataclasses import asdict, dataclass
 from types import SimpleNamespace
 
+from about_time import about_time
 import gradio as gr
 from ctransformers import AutoConfig, AutoModelForCausalLM
 
@@ -26,25 +27,33 @@ def predict0(prompt, bot):
     # logger.debug(f"{prompt=}, {bot=}, {timeout=}")
     logger.debug(f"{prompt=}, {bot=}")
     ns.response = ""
-    try:
-        user_prompt = prompt
-        generator = generate(llm, generation_config, system_prompt, user_prompt.strip())
-        print(assistant_prefix, end=" ", flush=True)
+    with about_time() as atime:
+        try:
+            # user_prompt = prompt
+            generator = generate(llm, generation_config, system_prompt, prompt.strip())
+            print(assistant_prefix, end=" ", flush=True)
 
-        response = ""
-        buff.update(value="diggin...")
-        for word in generator:
-            print(word, end="", flush=True)
-            response += word
-            ns.response = response
-            buff.update(value=response)
-        print("")
-        logger.debug(f"{response=}")
-    except Exception as exc:
-        logger.error(exc)
-        response = f"{exc=}"
+            response = ""
+            buff.update(value="diggin...")
+            bot[-1] = [(prompt, "diggin...")]
+            for word in generator:
+                print(word, end="", flush=True)
+                response += word
+                ns.response = response
+                buff.update(value=response)
+                bot[-1] = [(prompt, response)]
+            print("")
+            logger.debug(f"{response=}")
+        except Exception as exc:
+            logger.error(exc)
+            response = f"{exc=}"
+
     # bot = {"inputs": [response]}
-    bot = [(prompt, response)]
+    _ = (
+        f"(time elapsed: {atime.duration_human}, "
+        f"{atime.duration/(len(prompt) + len(response))} s/char)"
+    )
+    bot = [(prompt, f"{response} {_}")]
 
     return prompt, bot
 
@@ -53,8 +62,8 @@ def predict_api(prompt):
     logger.debug(f"{prompt=}")
     ns.response = ""
     try:
-        user_prompt = prompt
-        generator = generate(llm, generation_config, system_prompt, user_prompt.strip())
+        # user_prompt = prompt
+        generator = generate(llm, generation_config, system_prompt, prompt.strip())
         print(assistant_prefix, end=" ", flush=True)
 
         response = ""
