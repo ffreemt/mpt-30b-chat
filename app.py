@@ -21,6 +21,7 @@ if MOSAICML_API_KEY is None:
 
 ns = SimpleNamespace(response="")
 
+
 def predict0(prompt, bot):
     # logger.debug(f"{prompt=}, {bot=}, {timeout=}")
     logger.debug(f"{prompt=}, {bot=}")
@@ -47,6 +48,7 @@ def predict0(prompt, bot):
 
     return prompt, bot
 
+
 def predict_api(prompt):
     logger.debug(f"{prompt=}")
     ns.response = ""
@@ -71,6 +73,7 @@ def predict_api(prompt):
     # bot = [(prompt, response)]
 
     return response
+
 
 def download_mpt_quant(destination_folder: str, repo_id: str, model_filename: str):
     local_path = os.path.abspath(destination_folder)
@@ -216,7 +219,9 @@ def call_inf_server(prompt):
         # return response[len(clean_prompt) :]  # remove the prompt
         try:
             user_prompt = prompt
-            generator = generate(llm, generation_config, system_prompt, user_prompt.strip())
+            generator = generate(
+                llm, generation_config, system_prompt, user_prompt.strip()
+            )
             print(assistant_prefix, end=" ", flush=True)
             for word in generator:
                 print(word, end="", flush=True)
@@ -251,6 +256,9 @@ repo_id = "TheBloke/mpt-30B-chat-GGML"
 _ = """
 mpt-30b-chat.ggmlv0.q4_0.bin 	q4_0 	4 	16.85 GB 	19.35 GB 	4-bit.
 mpt-30b-chat.ggmlv0.q4_1.bin 	q4_1 	4 	18.73 GB 	21.23 GB 	4-bit. Higher accuracy than q4_0 but not as high as q5_0. However has quicker inference than q5 models.
+mpt-30b-chat.ggmlv0.q5_0.bin 	q5_0 	5 	20.60 GB 	23.10 GB
+mpt-30b-chat.ggmlv0.q5_1.bin 	q5_1 	5 	22.47 GB 	24.97 GB
+mpt-30b-chat.ggmlv0.q8_0.bin 	q8_0 	8 	31.83 GB 	34.33 GB
 """
 model_filename = "mpt-30b-chat.ggmlv0.q4_1.bin"
 destination_folder = "models"
@@ -261,7 +269,7 @@ logger.info("done dl")
 
 config = AutoConfig.from_pretrained("mosaicml/mpt-30b-chat", context_length=8192)
 llm = AutoModelForCausalLM.from_pretrained(
-    os.path.abspath("models/mpt-30b-chat.ggmlv0.q4_1.bin"),
+    os.path.abspath(f"models/{model_filename}"),
     model_type="mpt",
     config=config,
 )
@@ -308,13 +316,15 @@ with gr.Blocks(
             """<center><a href="https://huggingface.co/spaces/mikeee/mpt-30b-chat?duplicate=true"><img src="https://bit.ly/3gLdBN6" alt="Duplicate"></a> and spin a CPU UPGRADE to avoid the queue</center>"""
         )
         gr.Markdown(
-            """<h4><center>mpt-30b-chat-ggml</center></h4>
+            """<h4><center>mpt-30b-chat-ggml (q4_1)</center></h4>
 
             This demo is of [TheBloke/mpt-30B-chat-GGML](https://huggingface.co/TheBloke/mpt-30B-chat-GGML).
 
+            Try to refresh the browser and try again when occasionally errors occur.
+
             It takes about >40 seconds to get a response. Restarting the space takes about 5 minutes if the space is asleep due to inactivity. If the space crashes for some reason, it will also take about 5 minutes to restart. You need to refresh the browser to reload the new space.
             """,
-            elem_classes="xsmall"
+            elem_classes="xsmall",
         )
     conversation = Chat()
     chatbot = gr.Chatbot().style(height=700)  # 500
@@ -358,14 +368,15 @@ with gr.Blocks(
                 ["Suggest four metaphors to describe the benefits of AI"],
                 ["Write a pop song about leaving home for the sandy beaches."],
                 ["Write a summary demonstrating my ability to tame lions"],
+                ["鲁迅和周树人什么关系 说中文"],
                 ["鲁迅和周树人什么关系"],
+                ["鲁迅和周树人什么关系 用英文回答"],
                 ["从前有一头牛，这头牛后面有什么？"],
                 ["正无穷大加一大于正无穷大吗？"],
                 ["正无穷大加正无穷大大于正无穷大吗？"],
                 ["-2的平方根等于什么"],
                 ["树上有5只鸟，猎人开枪打死了一只。树上还有几只鸟？"],
                 ["树上有11只鸟，猎人开枪打死了一只。树上还有几只鸟？提示：需考虑鸟可能受惊吓飞走。"],
-                ["鲁迅和周树人什么关系 用英文回答"],
                 ["以红楼梦的行文风格写一张委婉的请假条。不少于320字。"],
                 [f"{etext} 翻成中文，列出3个版本"],
                 [f"{etext} \n 翻成中文，保留原意，但使用文学性的语言。不要写解释。列出3个版本"],
@@ -377,7 +388,7 @@ with gr.Blocks(
                 ["Erkläre die Handlung von Cinderella in einem Satz. Auf Deutsch"],
             ],
             inputs=[msg],
-            examples_per_page=30,
+            examples_per_page=40,
         )
 
     # with gr.Row():
@@ -453,7 +464,7 @@ with gr.Blocks(
         outputs=[msg, chatbot],
         queue=True,
         show_progress="full",
-        api_name="predict"
+        api_name="predict",
     )
     submit.click(
         # fn=conversation.user_turn,
