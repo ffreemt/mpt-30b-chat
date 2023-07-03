@@ -299,7 +299,7 @@ css = """
 """
 
 with gr.Blocks(
-    title="mpt-30b-ggml-chat",
+    title="mpt-30b-chat-ggml",
     theme=gr.themes.Soft(text_size="sm"),
     css=css,
 ) as block:
@@ -308,7 +308,7 @@ with gr.Blocks(
             """<center><a href="https://huggingface.co/spaces/mikeee/mpt-30b-chat?duplicate=true"><img src="https://bit.ly/3gLdBN6" alt="Duplicate"></a> and spin a CPU UPGRADE to avoid the queue</center>"""
         )
         gr.Markdown(
-            """<h4><center>mpt-30b-ggml-chat</center></h4>
+            """<h4><center>mpt-30b-chat-ggml</center></h4>
 
             This demo is of [TheBloke/mpt-30B-chat-GGML](https://huggingface.co/TheBloke/mpt-30B-chat-GGML).
 

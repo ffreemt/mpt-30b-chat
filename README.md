@@ -1,5 +1,5 @@
 ---
-title: mpt-30b-ggml-chat
+title: mpt-30b-chat-ggml
 emoji: 🔥
 colorFrom: purple
 colorTo: red
