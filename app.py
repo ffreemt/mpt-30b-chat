@@ -3,9 +3,9 @@
 import os
 import time
 from dataclasses import asdict, dataclass
+from types import SimpleNamespace
 
-# from types import SimpleNamespace
-from typing import Generator
+# from typing import Generator
 
 import gradio as gr
 from about_time import about_time
@@ -30,14 +30,13 @@ if MOSAICML_API_KEY is None:
     raise ValueError("git environment variable must be set")
 
 
-# ns = SimpleNamespace(
-@dataclass
-class Namespace:
-    response: str = ""
-    generator: Generator | list = []
-
-
-ns = Namespace()
+# @dataclass
+# class Namespace:
+# ns = Namespace()
+ns = SimpleNamespace(
+    response="",
+    generator=[],
+)
 
 
 def predict0(prompt, bot):
