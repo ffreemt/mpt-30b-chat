@@ -1,17 +1,16 @@
 """Refer to https://github.com/abacaj/mpt-30B-inference."""
-# pylint: disable=invalid-name, missing-function-docstring, missing-class-docstring, redefined-outer-name, broad-except, line-too-long
+# pylint: disable=invalid-name, missing-function-docstring, missing-class-docstring, redefined-outer-name, broad-except, line-too-long, too-many-instance-attributes
 import os
 import time
 from dataclasses import asdict, dataclass
 from types import SimpleNamespace
 
-from about_time import about_time
 import gradio as gr
+from about_time import about_time
 from ctransformers import AutoConfig, AutoModelForCausalLM
-
-from mcli import predict
 from huggingface_hub import hf_hub_download
 from loguru import logger
+from mcli import predict
 
 URL = os.getenv("URL", "")
 MOSAICML_API_KEY = os.getenv("MOSAICML_API_KEY", "")
@@ -26,6 +25,7 @@ ns = SimpleNamespace(response="")
 def predict0(prompt, bot):
     # logger.debug(f"{prompt=}, {bot=}, {timeout=}")
     logger.debug(f"{prompt=}, {bot=}")
+
     ns.response = ""
     with about_time() as atime:
         try:
@@ -43,6 +43,7 @@ def predict0(prompt, bot):
                 buff.update(value=response)
             print("")
             logger.debug(f"{response=}")
+            bot[-1] = [prompt, response]
         except Exception as exc:
             logger.error(exc)
             response = f"{exc=}"
@@ -52,9 +53,13 @@ def predict0(prompt, bot):
         f"(time elapsed: {atime.duration_human}, "
         f"{atime.duration/(len(prompt) + len(response)):.1f}s/char)"
     )
+
+    # bot[-1] = [prompt, f"{response} {_}"]
     bot.append([prompt, f"{response} {_}"])
 
     return prompt, bot
+
+    # for stream refer to https://gradio.app/creating-a-chatbot/#a-simple-chatbot-demo
 
 
 def predict_api(prompt):
@@ -230,11 +235,12 @@ def call_inf_server(prompt):
             generator = generate(
                 llm, generation_config, system_prompt, user_prompt.strip()
             )
-            print(assistant_prefix, end=" ", flush=True)
+            # print(assistant_prefix, end=" ", flush=True)
+            print(assistant_prefix, flush=True)  # vertical
             for word in generator:
                 print(word, end="", flush=True)
+                response = word
             print("")
-            response = word
         except Exception as exc:
             logger.error(exc)
             response = f"{exc=}"
@@ -475,8 +481,8 @@ with gr.Blocks(
         api_name="predict",
     )
     submit.click(
-        # fn=conversation.user_turn,
-        fn=predict0,
+        # fn=predict0,
+        fn=lambda x, y: ("",) + predict0(x, y)[1:],  # clear msg
         inputs=[msg, chatbot],
         outputs=[msg, chatbot],
         queue=True,
