@@ -71,7 +71,6 @@ def predict0(prompt, bot):
         f"{atime.duration/(len(prompt) + len(response)):.1f}s/char)"  # type: ignore
     )
 
-    # bot[-1] = [prompt, f"{response} {_}"]
     bot.append([prompt, f"{response} {_}"])
 
     return prompt, bot
@@ -342,7 +341,7 @@ css = """
 
 with gr.Blocks(
     title="mpt-30b-chat-ggml",
-    theme=gr.themes.Soft(text_size="sm"),
+    theme=gr.themes.Soft(text_size="sm", spacing_size="sm"),
     css=css,
 ) as block:
     with gr.Accordion("🎈 Info", open=False):
@@ -361,7 +360,7 @@ with gr.Blocks(
             elem_classes="xsmall",
         )
     conversation = Chat()
-    chatbot = gr.Chatbot().style(height=700)  # 500
+    chatbot = gr.Chatbot(scroll_to_output=True).style(height=700)  # 500
     buff = gr.Textbox(show_label=False)
     with gr.Row():
         with gr.Column():
@@ -370,11 +369,11 @@ with gr.Blocks(
                 placeholder="Ask me anything (press Enter or click Submit to send)",
                 show_label=False,
             ).style(container=False)
-        with gr.Column():
+        with gr.Column(scale=0.3):
             with gr.Row():
                 submit = gr.Button("Submit", elem_classes="xsmall")
                 stop = gr.Button("Stop", visible=False)
-                clear = gr.Button("Clear", visible=True)
+                clear = gr.Button("Clear History", visible=True)
     with gr.Row(visible=False):
         with gr.Accordion("Advanced Options:", open=False):
             with gr.Row():
