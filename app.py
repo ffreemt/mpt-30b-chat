@@ -363,13 +363,13 @@ with gr.Blocks(
     chatbot = gr.Chatbot(scroll_to_output=True).style(height=700)  # 500
     buff = gr.Textbox(show_label=False)
     with gr.Row():
-        with gr.Column():
+        with gr.Column(scale=1):
             msg = gr.Textbox(
                 label="Chat Message Box",
                 placeholder="Ask me anything (press Enter or click Submit to send)",
                 show_label=False,
             ).style(container=False)
-        with gr.Column(scale=0.3):
+        with gr.Column(scale=0.1):
             with gr.Row():
                 submit = gr.Button("Submit", elem_classes="xsmall")
                 stop = gr.Button("Stop", visible=False)
