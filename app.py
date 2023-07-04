@@ -3,7 +3,9 @@
 import os
 import time
 from dataclasses import asdict, dataclass
-from types import SimpleNamespace
+
+# from types import SimpleNamespace
+from typing import Generator
 
 import gradio as gr
 from about_time import about_time
@@ -12,6 +14,14 @@ from huggingface_hub import hf_hub_download
 from loguru import logger
 from mcli import predict
 
+# fix timezone in Linux
+os.environ["TZ"] = "Asia/Shanghai"
+try:
+    time.tzset()  # type: ignore # pylint: disable=no-member
+except Exception:
+    # Windows
+    logger.warning("Windows, cant run time.tzset()")
+
 URL = os.getenv("URL", "")
 MOSAICML_API_KEY = os.getenv("MOSAICML_API_KEY", "")
 if URL is None:
@@ -19,7 +29,15 @@ if URL is None:
 if MOSAICML_API_KEY is None:
     raise ValueError("git environment variable must be set")
 
-ns = SimpleNamespace(response="")
+
+# ns = SimpleNamespace(
+@dataclass
+class Namespace:
+    response: str = ""
+    generator: Generator | list = []
+
+
+ns = Namespace()
 
 
 def predict0(prompt, bot):
@@ -27,7 +45,7 @@ def predict0(prompt, bot):
     logger.debug(f"{prompt=}, {bot=}")
 
     ns.response = ""
-    with about_time() as atime:
+    with about_time() as atime:  # type: ignore
         try:
             # user_prompt = prompt
             generator = generate(llm, generation_config, system_prompt, prompt.strip())
@@ -37,21 +55,21 @@ def predict0(prompt, bot):
             buff.update(value="diggin...")
 
             for word in generator:
-                print(word, end="", flush=True)
+                # print(word, end="", flush=True)
+                print(word, flush=True)  # vertical stream
                 response += word
                 ns.response = response
                 buff.update(value=response)
             print("")
             logger.debug(f"{response=}")
-            bot[-1] = [prompt, response]
         except Exception as exc:
             logger.error(exc)
             response = f"{exc=}"
 
     # bot = {"inputs": [response]}
     _ = (
-        f"(time elapsed: {atime.duration_human}, "
-        f"{atime.duration/(len(prompt) + len(response)):.1f}s/char)"
+        f"(time elapsed: {atime.duration_human}, "  # type: ignore
+        f"{atime.duration/(len(prompt) + len(response)):.1f}s/char)"  # type: ignore
     )
 
     # bot[-1] = [prompt, f"{response} {_}"]
@@ -144,7 +162,7 @@ class Chat:
     system_format = "<|im_start|>system\n{}<|im_end|>\n"
 
     def __init__(
-        self, system: str = None, user: str = None, assistant: str = None
+        self, system: str | None = None, user: str | None = None, assistant: str | None = None
     ) -> None:
         if system is not None:
             self.set_system_prompt(system)
@@ -194,12 +212,16 @@ class Chat:
 
         return text
 
-    def clear_history(self, history):
+    # def clear_history(self, history):
+    def clear_history(self):
         return []
 
-    def turn(self, user_input: str):
-        self.user_turn(user_input)
-        return self.bot_turn()
+    # def turn(self, user_input: str):
+    def turn(self, user_input: str, system, history):
+        # self.user_turn(user_input)
+        self.user_turn(user_input, history)
+        # return self.bot_turn()
+        return self.bot_turn(system, history)
 
     def user_turn(self, user_input: str, history):
         history.append([user_input, ""])
@@ -235,8 +257,7 @@ def call_inf_server(prompt):
             generator = generate(
                 llm, generation_config, system_prompt, user_prompt.strip()
             )
-            # print(assistant_prefix, end=" ", flush=True)
-            print(assistant_prefix, flush=True)  # vertical
+            print(assistant_prefix, end=" ", flush=True)
             for word in generator:
                 print(word, end="", flush=True)
                 response = word
@@ -299,7 +320,7 @@ generation_config = GenerationConfig(
     seed=42,
     reset=False,  # reset history (cache)
     stream=True,  # streaming per word/token
-    threads=int(os.cpu_count() / 2),  # adjust for your CPU
+    threads=os.cpu_count() // 2,  # type: ignore  # adjust for your CPU
     stop=["<|im_end|>", "|<"],
 )
 
